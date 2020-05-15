@@ -45,48 +45,72 @@ app.on('activate', () => {
   }
 });
 
-var cron = require('node-cron');
+// var cron = require('node-cron');
 
-var archiver = require('archiver');
-var fs = require('fs');
+// var archiver = require('archiver');
+// var fs = require('fs');
 
-// 出力先のzipファイル名
-var zip_file_name = "tmp.zip";
+// // 出力先のzipファイル名
+// var zip_file_name = "tmp.zip";
 
-// ストリームを生成して、archiverと紐付ける
-var archive = archiver.create('zip', {});
-var output = fs.createWriteStream(zip_file_name);
-archive.pipe(output);
+// // ストリームを生成して、archiverと紐付ける
+// var archive = archiver.create('zip', {});
+// var output = fs.createWriteStream(zip_file_name);
+// archive.pipe(output);
 
-// 圧縮対象のファイル及びフォルダ
-archive.glob('*.log', { cwd: 'D:/PostgreSQL/11/data/log' }, { prefix: 'pg_log' });
-archive.glob('*.js');
-archive.glob('*.css');
-archive.glob('*.ico');
-archive.glob('*.html');
-archive.glob('package.json');
-archive.glob('css/**/*');
-archive.glob('fonts/**/*');
-archive.glob('images/**/*');
+// // 圧縮対象のファイル及びフォルダ
+// archive.glob('*.log', { cwd: 'D:/PostgreSQL/11/data/log' }, { prefix: 'pg_log' });
+// archive.glob('*.js');
+// archive.glob('*.css');
+// archive.glob('*.ico');
+// archive.glob('*.html');
+// archive.glob('package.json');
+// archive.glob('css/**/*');
+// archive.glob('fonts/**/*');
+// archive.glob('images/**/*');
 
-// zip圧縮実行
-archive.finalize();
-var archive_size = archive.pointer();
-console.log(`complete! total size : ${archive_size} bytes`);
+// // zip圧縮実行
+// archive.finalize();
+// var archive_size = archive.pointer();
+// console.log(`complete! total size : ${archive_size} bytes`);
 
 
-cron.schedule('*/1 * * * *', function(){
-    console.log("zip-start"); //every 2 o'clock
+// cron.schedule('*/1 * * * *', function(){
+//     console.log("zip-start"); //every 2 o'clock
 
-    // zipファイルの連番
-    let count = 0
+//     // zipファイルの連番
+//     let count = 0
 
-    // zip.addLocalFile("D:/PostgreSQL/11/data/log","","postgresql-*.log");
+//     // zip.addLocalFile("D:/PostgreSQL/11/data/log","","postgresql-*.log");
 
-    // // まだzip化するファイルが存在するとき
-    // if (zip.getEntryCount()) {
-    //   // zipファイル書き出し
-    //   zip.writeZip(path.resolve(__dirname, `log-${++count}.zip`))
-    // }
+//     // // まだzip化するファイルが存在するとき
+//     // if (zip.getEntryCount()) {
+//     //   // zipファイル書き出し
+//     //   zip.writeZip(path.resolve(__dirname, `log-${++count}.zip`))
+//     // }
 
-});
+// });
+
+const { spawn } = require('child_process');
+
+// 実行したい外部コマンド: (tick.logへ10回ログ出力します)
+// const commandline = "node src/tick.js --times=10 --logfile=tick.log";
+const commandline = "node src/log_upload.js";
+runCommand(commandline);
+
+/** コマンドを外部プロセスとして実行 */
+function runCommand(command) {
+  console.log("running commandline: %s", commandline);
+  const parts = commandline.split(" ");
+  const cmd = parts[0];
+  const args = parts.splice(1);
+
+  // バックグラウンドで実行:
+  // メインプロセスが終了しても外部プロセスとして動作します。
+  const child = spawn(cmd, args, {
+    stdio: 'ignore', // piping all stdio to /dev/null
+    detached: true, // メインプロセスから切り離す設定
+    env: process.env, // NODE_ENV を tick.js へ与えるため
+  });
+  child.unref(); // メインプロセスから切り離す
+}
