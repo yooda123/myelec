@@ -12,19 +12,22 @@ if (!times) times = 10;
 if (!logfile) logfile = './tick.log';
 
 
+console.log(times);
+console.log(logfile);
+
 // 標準出力をログファイルへ出力:
 const logstream = fs.createWriteStream(logfile, { flags: 'a' });
-console.log = function(d) {
+console.log2 = function(d) {
   logstream.write(new Date().toLocaleString() + ': ' + d + '\n');
 };
 
 // ティック実行:
 let time = 0;
 const intervalId = setInterval(() => {
-  console.log("tick...");
+  console.log2("tick...");
   time += 1;
   if (time >= times) {
     clearInterval(intervalId);
-    console.log("end.");
+    console.log2("end.");
   }
 }, 1000);

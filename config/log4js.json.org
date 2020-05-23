@@ -1,0 +1,36 @@
+{
+    "appenders": {
+      "access": {
+        "type": "dateFile",
+        "filename": "log/access.log",
+        "pattern": "-yyyy-MM-dd_hh-mm",
+        "category": "http"
+      },
+      "app": {
+        "type": "file",
+        "filename": "log/app.log",
+        "maxLogSize": 10485760,
+        "numBackups": 3
+      },
+      "errorFile": {
+        "type": "file",
+        "filename": "log/errors.log"
+      },
+      "errors": {
+        "type": "logLevelFilter",
+        "level": "ERROR",
+        "appender": "errorFile"
+      },
+      "logstash": {
+        "type": "@log4js-node/logstash-http",
+        "url": "http://localhost:9200/_bulk",
+        "application": "electron-log4js",
+        "logType": "application",
+        "logChannel": "node"
+      }
+    },
+    "categories": {
+      "default": { "appenders": [ "app", "errors", "logstash" ], "level": "DEBUG" },
+      "http": { "appenders": [ "access"], "level": "DEBUG" }
+    }
+  }

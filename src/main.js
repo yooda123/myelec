@@ -1,5 +1,29 @@
 // アプリケーション作成用のモジュールを読み込み
 const {app, BrowserWindow} = require('electron');
+process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = '1';
+const EventEmitter = require('events');
+class Emitter extends EventEmitter {}
+const emitter = new Emitter();
+
+
+
+
+var log4js = require('log4js');
+log4js.configure('./config/log4js.json');
+var logger = log4js.getLogger("main");
+
+logger.info("Hello electron!")
+
+var ipc = require('electron').ipcMain;
+// レンダラープロセスのエラーキャッチ
+ipc.on('errorInWindow', function(event, data, url, line){
+  logger.error(url + ":" + line + " - " + data);
+});
+
+// メインプロセスのエラーキャッチ
+process.on('uncaughtException', function (error) {
+  logger.error(error.stack);
+});
 
 // メインウィンドウ
 let mainWindow;
@@ -16,14 +40,20 @@ function createWindow() {
   // メインウィンドウに表示するURLを指定します
   // （今回はmain.jsと同じディレクトリのindex.html）
   mainWindow.loadFile('index.html');
-
   // デベロッパーツールの起動
   mainWindow.webContents.openDevTools();
 
   // メインウィンドウが閉じられたときの処理
   mainWindow.on('closed', () => {
     mainWindow = null;
+    logger.warn("Close electron!")
   });
+
+    // メインウィンドウが閉じられたときの処理
+    mainWindow.on('resize', () => {
+      logger.warn("Click electron!")
+      
+    });
 }
 
 //  初期化が完了した時の処理
@@ -37,13 +67,19 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
 // アプリケーションがアクティブになった時の処理(Macだと、Dockがクリックされた時）
 app.on('activate', () => {
   // メインウィンドウが消えている場合は再度メインウィンドウを作成する
   if (mainWindow === null) {
+    
     createWindow();
   }
 });
+
+Main
+
+
 
 // var cron = require('node-cron');
 
@@ -91,26 +127,30 @@ app.on('activate', () => {
 
 // });
 
-const { spawn } = require('child_process');
 
-// 実行したい外部コマンド: (tick.logへ10回ログ出力します)
-// const commandline = "node src/tick.js --times=10 --logfile=tick.log";
-const commandline = "node src/log_upload.js";
-runCommand(commandline);
+/** 外部プロセス実行 */
+// const { spawn } = require('child_process');
 
-/** コマンドを外部プロセスとして実行 */
-function runCommand(command) {
-  console.log("running commandline: %s", commandline);
-  const parts = commandline.split(" ");
-  const cmd = parts[0];
-  const args = parts.splice(1);
+// // 実行したい外部コマンド: (tick.logへ10回ログ出力します)
+// const commandline = "node src/tick.js --times=10 --logfile=C:/tick.log";
+// // const commandline = "node src/log_upload.js";
+// runCommand(commandline);
 
-  // バックグラウンドで実行:
-  // メインプロセスが終了しても外部プロセスとして動作します。
-  const child = spawn(cmd, args, {
-    stdio: 'ignore', // piping all stdio to /dev/null
-    detached: true, // メインプロセスから切り離す設定
-    env: process.env, // NODE_ENV を tick.js へ与えるため
-  });
-  child.unref(); // メインプロセスから切り離す
-}
+// /** コマンドを外部プロセスとして実行 */
+// function runCommand(command) {
+//   console.log("running commandline: %s", commandline);
+//   const parts = commandline.split(" ");
+//   const cmd = parts[0];
+//   const args = parts.splice(1);
+
+//   // バックグラウンドで実行:
+//   // メインプロセスが終了しても外部プロセスとして動作します。
+//   const child = spawn(cmd, args, {
+//     stdio: 'ignore', // piping all stdio to /dev/null
+//     detached: true, // メインプロセスから切り離す設定
+//     env: process.env, // NODE_ENV を tick.js へ与えるため
+//   });
+//   child.unref(); // メインプロセスから切り離す
+// }
+
+

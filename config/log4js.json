@@ -1,0 +1,36 @@
+{
+    "appenders": {
+      "access": {
+        "type": "dateFile",
+        "filename": "log/access.log",
+        "pattern": "-yyyy-MM-dd_hh-mm",
+        "category": "http"
+      },
+      "app": {
+        "type": "dateFile",
+        "filename": "log/app.log",
+        "pattern": "-yyyy-MM-dd_hh"
+      },
+      "errorFile": {
+        "type": "dateFile",
+        "filename": "log/errors.log",
+        "pattern": "-yyyy-MM-dd_hh"
+      },
+      "errors": {
+        "type": "logLevelFilter",
+        "level": "ERROR",
+        "appender": "errorFile"
+      },
+      "logstash": {
+        "type": "@log4js-node/logstash-http",
+        "url": "http://localhost:9200/_bulk",
+        "application": "electron-log4js",
+        "logType": "application",
+        "logChannel": "node"
+      }
+    },
+    "categories": {
+      "default": { "appenders": [ "app", "errors", "logstash" ], "level": "DEBUG" },
+      "http": { "appenders": [ "access"], "level": "DEBUG" }
+    }
+  }
